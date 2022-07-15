@@ -72,10 +72,12 @@ jobs:
       - restore_cache:
           keys: [frontend-scan]
       - run:
-        cd frontend
-        npm install
-        # npm install oauth-sign@^0.9.0
-        npm audit --audit-level=critical
+          name: Scan frontend
+          command: |
+            cd frontend
+            npm install
+            # npm install oauth-sign@^0.9.0
+            npm audit --audit-level=critical
 
   scan-backend:
     docker:
@@ -85,10 +87,12 @@ jobs:
       - restore_cache:
           keys: [backend-scan]
       - run:
-        cd frontend
-        npm install
-        # npm install oauth-sign@^0.9.0
-        npm audit --audit-level=critical
+          name: Scan backend
+          command: |
+            cd frontend
+            npm install
+            # npm install oauth-sign@^0.9.0
+            npm audit --audit-level=critical
 
 # Orchestrate our job run sequence
 workflows:
