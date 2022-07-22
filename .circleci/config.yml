@@ -12,9 +12,9 @@ commands:
           when: on_fail
           command: |
              aws s3 rm "s3://udapeople-<<parameters.workflow_id >>" --recursive
-            aws cloudformation delete-stack \
-              --stack-name "udapeople-frontend-<< parameters.workflow_id >>"
-            aws cloudformation delete-stack \
+             aws cloudformation delete-stack \
+                --stack-name "udapeople-frontend-<< parameters.workflow_id >>"
+             aws cloudformation delete-stack \
               --stack-name "udapeople-backend-<< parameters.workflow_id >>"
 
 # Define the jobs we want to run for this project
