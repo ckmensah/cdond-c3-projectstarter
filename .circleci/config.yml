@@ -4,15 +4,14 @@ commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     parameters:
-      workflow-id:
-        type: string  
+      # Add parameter here   
     steps:
       - run:
           name: Destroy environments
           when: on_fail
           command: |
-            aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
-            aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+            aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
+            aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
 
 # Define the jobs we want to run for this project
 jobs:
@@ -127,7 +126,7 @@ jobs:
               --tags project=udapeople \
               --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
-              
+              exit 1
       - run:
           name: Ensure front-end infrastructure exist
           command: |
@@ -136,12 +135,11 @@ jobs:
               --tags project=udapeople \
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
-              
+              exit 1
       - run:
           name: Add back-end ip to ansible inventory
           command: |
-            aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text >> ~/project/.circleci/ansible/inventory.txt
-            cat ~/project/.circleci/ansible/inventory.txt
+            ansible-playbook i inventory.txt
       - persist_to_workspace:
           root: ~/
           paths:
@@ -150,26 +148,26 @@ jobs:
 
   configure-infrastructure:
     docker:
-      - image: python:3.7-alpine3.16
+      - image: python:3.7-alpine3.11
     steps:
-      - checkout
+      - checkout # Checkout code from git
       - add_ssh_keys:
           fingerprints: ["c2:7f:76:f1:d2:5c:80:d2:dd:1b:f9:ba:97:96:aa:de"]
       - attach_workspace:
-        at: ~/
+        at: .circleci/ansible
       - run:
           name: Install dependencies
           command: |
             yum install -y tar gzip
             apk add --update ansible
-            apk add --no-cache aws-cli
+            exit 1
       - run:
           name: Configure server
           command: |
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
-      - destroy-environment:
-          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"         
+            exit 1
+      # Here's where you will add some code to rollback on failure         
 
 # Orchestrate our job run sequence
 workflows:
@@ -186,4 +184,4 @@ workflows:
       - scan-frontend:
           requires: [build-backend]
       - deploy-infrastructure:
-          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          requires: [build-backend, build-frontend]
