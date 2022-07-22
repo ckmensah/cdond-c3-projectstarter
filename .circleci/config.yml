@@ -125,7 +125,7 @@ jobs:
               --template-file .circleci/files/backend.yml \
               --tags project=udapeople \
               --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
+              --parameter-overrides ID="udapeople-hgcjaskjzbvkjbhvkaj9932"  
               exit 1
       - run:
           name: Ensure front-end infrastructure exist
@@ -134,7 +134,7 @@ jobs:
               --template-file .circleci/files/frontend.yml \
               --tags project=udapeople \
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
+              --parameter-overrides ID="udapeople-hgcjaskjzbvkjbhvkaj9932"  
               exit 1
       - run:
           name: Add back-end ip to ansible inventory
@@ -150,7 +150,7 @@ jobs:
     docker:
       - image: python:3.7-alpine3.11
     steps:
-      - checkout # Checkout code from git
+      - checkout
       - add_ssh_keys:
           fingerprints: ["c2:7f:76:f1:d2:5c:80:d2:dd:1b:f9:ba:97:96:aa:de"]
       - attach_workspace:
