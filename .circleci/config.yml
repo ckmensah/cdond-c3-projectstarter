@@ -204,6 +204,7 @@ jobs:
           command: |
             cd backend
             npm install
+            npm audit fix --audit-level=critical --force
             npm run migrations > migrations_dump.txt
       - run:
           name: Send migration results to memstash
@@ -262,6 +263,44 @@ jobs:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
       - revert-migrations:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}" 
+
+  deploy-backend:
+    docker:
+      - image: python:3.7-alpine3.16
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["c2:7f:76:f1:d2:5c:80:d2:dd:1b:f9:ba:97:96:aa:de"]
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install tar
+          command: |
+            apk add --upgrade tar
+      - run:
+          name: Install gzip
+          command: |
+            apk add --upgrade gzip
+      - run:
+          name: Install Ansible
+          command: apk add --update ansible
+      - run:
+          name: Install NPM
+          command: apk add --update npm
+      - run:
+          name: Install NodeJS
+          command: apk add --update nodejs
+      - run:
+          name: Install AWS CLI
+          command: apk add --no-cache aws-cli
+      - run:
+          name: Install CURL
+          command: apk add curl
+      - run:
+          name: Deploy backend
+          command: |
+            # your code here
+      # Here's where you will add some code to rollback on failure 
 
 # Orchestrate our job run sequence
 workflows:
