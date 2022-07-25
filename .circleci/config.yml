@@ -128,6 +128,7 @@ jobs:
             cd frontend
             npm install
             npm audit fix --audit-level=critical --force
+            npm audit fix --force
             npm audit --audit-level=critical
             
   deploy-infrastructure:
@@ -158,7 +159,15 @@ jobs:
               --tags project=udapeople \
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
-  
+      - run:
+          name: Delete Old Backend Ip Address
+          command: |
+            OLD_WORKFLOW_ID=$(aws cloudformation list-exports --query "Exports[?Name==\`WorkflowID\`].Value" --no-paginate --output text)
+            OLD_BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=backend-${OLD_WORKFLOW_ID}" --output text)
+            echo $OLD_WORKFLOW_ID
+            echo $OLD_BACKEND_IP
+            sed -i -e '2d' ~/project/.circleci/ansible/inventory.txt
+            cat ~/project/.circleci/ansible/inventory.txt
       - run:
           name: Add back-end ip to ansible inventory
           command: |
@@ -173,7 +182,7 @@ jobs:
 
   configure-infrastructure:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: python:3.7-alpine3.16
     steps:
       - checkout
       - add_ssh_keys:
@@ -189,7 +198,7 @@ jobs:
           name: Configure server
           command: |
             cd .circleci/ansible
-            ansible-playbook -i inventory.txt configure-server.yml 
+            ansible-playbook -i inventory.txt configure-server.yml -vvv
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"  
   
@@ -212,8 +221,6 @@ jobs:
           command: |
             cd backend
             npm install
-            npm audit fix --audit-level=critical
-            npm audit --audit-level=critical
             npm run migrations > migrations_dump.txt
       - run:
           name: Send migration results to kvdb.io
@@ -234,10 +241,6 @@ jobs:
       - checkout
       - attach_workspace:
           at: ~/
-      - run:
-          name: Install python
-          command: |
-            apt -y update && apt install -y python3
       - run:
           name: Install Ansible
           command: apk add --update ansible
@@ -275,7 +278,7 @@ jobs:
 
   deploy-backend:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: python:3.7-alpine3.16
     steps:
       - checkout
       - add_ssh_keys:
