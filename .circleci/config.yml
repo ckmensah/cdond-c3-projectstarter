@@ -173,7 +173,7 @@ jobs:
 
   configure-infrastructure:
     docker:
-      - image: python:3.7-alpine3.16
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
       - add_ssh_keys:
@@ -211,7 +211,9 @@ jobs:
           name: Run migrations
           command: |
             cd backend
-            npm install --save-dev standard-version
+            npm install
+            npm audit fix --audit-level=critical
+            npm audit --audit-level=critical
             npm run migrations > migrations_dump.txt
       - run:
           name: Send migration results to kvdb.io
@@ -273,7 +275,7 @@ jobs:
 
   deploy-backend:
     docker:
-      - image: python:3.7-alpine3.16
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
       - add_ssh_keys:
