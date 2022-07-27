@@ -1,3 +1,19 @@
+---
+- name: "update apt packages"
+  become: yes
+  apt:
+    update_cache: yes
+
+- name: "upgrade packages"
+  become: yes
+  apt:
+    upgrade: yes
+
+- name: "Add node exporter user"
+  become: yes
+  command:
+    cmd: useradd --no-create-home node_exporter
+
 - name: "install node exporter."
   unarchive:
     src: https://github.com/prometheus/node_exporter/releases/download/v0.17.0/node_exporter-0.17.0.linux-amd64.tar.gz
